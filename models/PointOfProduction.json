@@ -1,0 +1,15 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:PointOfProduction;1",
+  "@type": "Interface",
+  "displayName": "PointOfProduction",
+  "extends": ["dtmi:sample:aqueduct:BaseAsset;1"],
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Volume",
+      "schema": "string",
+      "comment": "Volume of water available"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:Reservoir;1",
+    "@type": "Interface",
+    "displayName": "PointOfProduction",
+    "extends": ["dtmi:sample:aqueduct:PointOfProduction;1"]
+  }
+  

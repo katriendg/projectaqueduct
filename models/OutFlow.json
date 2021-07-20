@@ -1,0 +1,14 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:OutFlow;1",
+    "@type": "Interface",
+    "displayName": "OutFlow",
+    "extends": ["dtmi:sample:aqueduct:Flow;1"],
+    "contents": [
+      {
+        "@type": "Relationship",
+        "name": "isFlowingTo",
+        "target": "dtmi:sample:aqueduct:InFlow;1"
+      }
+    ]
+  }

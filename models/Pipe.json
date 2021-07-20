@@ -1,0 +1,24 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:Pipe;1",
+    "@type": "Interface",
+    "displayName": "Pipe",
+    "extends": ["dtmi:sample:aqueduct:BaseAsset;1"],
+    "contents": [
+      {
+        "@type": ["Property", "Length"],
+        "name": "Diameter",
+        "schema": "double",
+        "unit": "centimetre",
+        "comment": "Diameter"
+      },
+      {
+        "@type": ["Property", "Length"],
+        "name": "Length",
+        "schema": "double",
+        "unit": "metre",
+        "comment": "Length of pipe"
+      }
+    ]
+  }
+  

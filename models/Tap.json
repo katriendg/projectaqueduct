@@ -1,0 +1,9 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Tap;1",
+  "@type": "Interface",
+  "displayName": "Tap",
+  "extends": [
+    "dtmi:sample:aqueduct:PointOfUse;1"
+  ]
+}

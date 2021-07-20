@@ -1,0 +1,33 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:BaseDevice;1",
+    "@type": "Interface",
+    "displayName": "BaseDevice",
+    "contents": [
+      {
+        "@type": ["Property", "VolumeFlowRate"],
+        "name": "VolumeFlow",
+        "schema": "double",
+        "unit": "litrePerSecond",
+        "comment": "Flow rate of litres per second"
+      },
+      {
+        "@type": ["Property", "Temperature"],
+        "name": "Temperature",
+        "schema": "double",
+        "unit": "degreeCelsius",
+        "comment": "Temperature"
+      },
+      {
+        "@type": ["Property", "Pressure"],
+        "name": "Pressure",
+        "schema": "double",
+        "unit": "bar"
+      },
+      {
+        "@type": "Relationship",
+        "name": "isAttachedTo"
+      }
+    ]
+  }
+  

@@ -1,0 +1,15 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:Flow;1",
+    "@type": "Interface",
+    "displayName": "Flow",
+    "contents": [
+      {
+        "@type": ["Property", "VolumeFlowRate"],
+        "name": "VolumeFlow",
+        "schema": "double",
+        "unit": "litrePerSecond",
+        "comment": "Flow rate of litres per second"
+      }
+    ]
+  }

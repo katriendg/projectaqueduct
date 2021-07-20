@@ -1,0 +1,22 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:PumpDevice;1",
+    "@type": "Interface",
+    "displayName": "PumpDevice",
+    "extends": ["dtmi:sample:aqueduct:BaseDevice;1"],
+    "contents": [
+      {
+        "@type": ["Property", "Power"],
+        "name": "Power",
+        "schema": "double",
+        "unit": "kilowatt"
+      },
+      {
+        "@type": ["Property"],
+        "name": "Running",
+        "comment": "TODO define enum or what would make sense",
+        "schema": "boolean"
+      }
+    ]
+  }
+  

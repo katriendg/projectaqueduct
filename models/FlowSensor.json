@@ -1,0 +1,8 @@
+{
+    "@context": "dtmi:dtdl:context;2",
+    "@id": "dtmi:sample:aqueduct:FlowSensor;1",
+    "@type": "Interface",
+    "displayName": "FlowSensor",
+    "extends": ["dtmi:sample:aqueduct:BaseDevice;1"]
+  }
+  
