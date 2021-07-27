@@ -2,5 +2,6 @@
     "@context": "dtmi:dtdl:context;2",
     "@id": "dtmi:sample:aqueduct:Junction;1",
     "@type": "Interface",
+    "displayName": "Junction",
     "extends": "dtmi:sample:aqueduct:Pipe;1"
   }

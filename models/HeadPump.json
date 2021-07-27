@@ -3,7 +3,6 @@
     "@id": "dtmi:sample:aqueduct:HeadPump;1",
     "@type": "Interface",
     "displayName": "HeadPump",
-    "extends": ["dtmi:sample:aqueduct:BaseAsset;1"]
-    
+    "extends": ["dtmi:sample:aqueduct:Pump;1"]
   }
   
