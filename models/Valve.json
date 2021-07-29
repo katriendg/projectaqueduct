@@ -1,19 +1,34 @@
 {
-    "@context": "dtmi:dtdl:context;2",
-    "@id": "dtmi:sample:aqueduct:Valve;1",
-    "@type": "Interface",
-    "displayName": "Valve",
-    "extends": [
-        "dtmi:sample:aqueduct:BaseAsset;1"
-    ],
-    "contents": [
-        {
-            "@type": [
-                "Property"
-            ],
-            "name": "OpenStatus",
-            "schema": "boolean",
-            "comment": "Open or closed, if open set to true"
-        }
-    ]
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Valve;1",
+  "@type": "Interface",
+  "displayName": "Valve",
+  "extends": [
+    "dtmi:sample:aqueduct:BaseAsset;1"
+  ],
+  "contents": [
+    {
+      "@type": [
+        "Property"
+      ],
+      "name": "OpenStatus",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "closed",
+            "displayName": "Closed",
+            "enumValue": 0
+          },
+          {
+            "name": "Open",
+            "displayName": "Open",
+            "enumValue": 1
+          }
+        ]
+      },
+      "comment": "Open or Closed status of the valve"
+    }
+  ]
 }

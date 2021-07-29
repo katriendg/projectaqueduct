@@ -1,34 +1,135 @@
 {
-    "@context": "dtmi:dtdl:context;2",
-    "@id": "dtmi:sample:aqueduct:BaseAsset;1",
-    "@type": "Interface",
-    "displayName": "BaseAsset",
-    "contents": [
-      {
-        "@type": ["Property", "VolumeFlowRate"],
-        "name": "VolumeFlow",
-        "schema": "double",
-        "unit": "litrePerSecond",
-        "comment": "Flow rate of litres per second"
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:BaseAsset;1",
+  "@type": "Interface",
+  "displayName": "BaseAsset",
+  "contents": [
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowCapacity",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Maximum flow capacity in litres per second"
+    },
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowVolume",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Current flow volume in litres per second"
+    },
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowMargin",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Expected margin between maximum flow capacity and current flow volume in litres per second"
+    },
+    {
+      "@type": "Property",
+      "name": "FlowQuality",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "unknown",
+            "displayName": "Unknown",
+            "enumValue": 0
+          },
+          {
+            "name": "ok",
+            "displayName": "Ok",
+            "enumValue": 1
+          },
+          {
+            "name": "nok",
+            "displayName": "NotOk",
+            "enumValue": 2
+          }
+        ]
       },
-      {
-        "@type": ["Property", "Temperature"],
-        "name": "Temperature",
-        "schema": "double",
-        "unit": "degreeCelsius",
-        "comment": "Temperature"
+      "comment": "Quality of flow, ok=flowing as expected, nok=not flowing as expected"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureCapacity",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Maximum pressure capacity in bar"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureVolume",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Current pressure volume in bar"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureMargin",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Expected margin between maximum pressure capacity and current pressure volume in bar"
+    },
+    {
+      "@type": "Property",
+      "name": "PressureQuality",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "unknown",
+            "displayName": "Unknown",
+            "enumValue": 0
+          },
+          {
+            "name": "ok",
+            "displayName": "Ok",
+            "enumValue": 1
+          },
+          {
+            "name": "nok",
+            "displayName": "NotOk",
+            "enumValue": 2
+          }
+        ]
       },
-      {
-        "@type": ["Property", "Pressure"],
-        "name": "Pressure",
-        "schema": "double",
-        "unit": "bar"
-      },
-      {
-        "@type": "Relationship",
-        "target": "dtmi:sample:aqueduct:OutFlow;1",
-        "name": "isFlowingTo"
-      }
-    ]
-  }
-  
+      "comment": "Quality of pressure, ok=pressure as expected, nok=pressure not as expected"
+    },
+    {
+      "@type": [
+        "Property",
+        "Temperature"
+      ],
+      "name": "Temperature",
+      "schema": "double",
+      "unit": "degreeCelsius",
+      "comment": "Temperature"
+    },
+    {
+      "@type": "Relationship",
+      "target": "dtmi:sample:aqueduct:BaseAsset;1",
+      "name": "isFlowingTo"
+    }
+  ]
+}

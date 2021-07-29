@@ -1,8 +1,27 @@
 {
-    "@context": "dtmi:dtdl:context;2",
-    "@id": "dtmi:sample:aqueduct:Reservoir;1",
-    "@type": "Interface",
-    "displayName": "Reservoir",
-    "extends": ["dtmi:sample:aqueduct:PointOfProduction;1"]
-  }
-  
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Reservoir;1",
+  "@type": "Interface",
+  "displayName": "Reservoir",
+  "extends": [
+    "dtmi:sample:aqueduct:PointOfProduction;1"
+  ],
+  "contents": [
+    {
+      "@type": [
+        "Property",
+        "Volume"
+      ],
+      "name": "Capacity",
+      "schema": "double",
+      "unit": "litre",
+      "comment": "Capacity of the reservoir"
+    },
+    {
+      "@type": "Property",
+      "name": "FilledPercent",
+      "schema": "double",
+      "comment": "Reservoir filled percentage"
+    }
+  ]
+}
