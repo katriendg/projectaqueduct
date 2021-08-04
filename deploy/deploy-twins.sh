@@ -98,9 +98,22 @@ twinPipe3bDevice="Pipe3bDevice"
 az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:FlowSensor;1" --twin-id "$twinPipe3bDevice" -o none
 az dt twin relationship create --dt-name $adtName --source "$twinPipe3bDevice" --target "$twinPipe3b" --relationship-id "$twinPipe3bDevice-at-$twinPipe3b" --kind "isAttachedTo" -o none
 # Valve
+twinValve1="Valve1"
+az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:Valve;1" --twin-id "$twinValve1" -o none
+az dt twin relationship create --dt-name $adtName --source "$twinPipe3b" --target "$twinValve1" --relationship-id "$twinPipe3b-to-$twinValve1" --kind "isFlowingTo" -o none
+# Valve
+twinVirtualDevice1="ValveDevice1"
+az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:VirtualDeviceValve;1" --twin-id "$twinVirtualDevice1" -o none
+az dt twin relationship create --dt-name $adtName --source "$twinVirtualDevice1" --target "$twinValve1" --relationship-id "$twinVirtualDevice1-at-$twinValve1" --kind "isAttachedTo" -o none
+# Pipe
+twinPipe3c="Pipe3c"
+az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:Pipe;1" --twin-id "$twinPipe3c" -o none
+az dt twin relationship create --dt-name $adtName --source "$twinValve1" --target "$twinPipe3c" --relationship-id "$twinValve1-to-$twinPipe3c" --kind "isFlowingTo" -o none
+# Tap2
 twinEnd2="End2"
-az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:Valve;1" --twin-id "$twinEnd2" -o none
-az dt twin relationship create --dt-name $adtName --source "$twinPipe3b" --target "$twinEnd2" --relationship-id "$twinEnd2-to-$twinEnd2" --kind "isFlowingTo" -o none
+az dt twin create --dt-name $adtName --dtmi "dtmi:sample:aqueduct:Tap;1" --twin-id "$twinEnd2" -o none
+az dt twin relationship create --dt-name $adtName --source "$twinPipe3c" --target "$twinEnd2" --relationship-id "$twinPipe3c-to-$twinEnd2" --kind "isFlowingTo" -o none
+
 # ADD HERE
 
 # Log end time
