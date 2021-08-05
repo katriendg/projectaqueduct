@@ -1,9 +1,9 @@
 {
   "@context": "dtmi:dtdl:context;2",
-  "@id": "dtmi:sample:aqueduct:PointOfUse;1",
+  "@id": "dtmi:sample:aqueduct:asset:PointOfUse;1",
   "@type": "Interface",
   "displayName": "PointOfUse",
   "extends": [
-    "dtmi:sample:aqueduct:BaseAsset;1"
+    "dtmi:sample:aqueduct:asset:Base;1"
   ]
 }

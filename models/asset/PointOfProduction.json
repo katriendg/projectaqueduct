@@ -1,10 +1,10 @@
 {
   "@context": "dtmi:dtdl:context;2",
-  "@id": "dtmi:sample:aqueduct:PointOfProduction;1",
+  "@id": "dtmi:sample:aqueduct:asset:PointOfProduction;1",
   "@type": "Interface",
   "displayName": "PointOfProduction",
   "extends": [
-    "dtmi:sample:aqueduct:BaseAsset;1"
+    "dtmi:sample:aqueduct:asset:Base;1"
   ],
   "contents": [
     {

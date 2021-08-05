@@ -1,0 +1,19 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Area;1",
+  "@type": "Interface",
+  "displayName": "Area",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema": "string",
+      "comment": "Name of the area"
+    },
+    {
+      "@type": "Relationship",
+      "target": "dtmi:sample:aqueduct:Region;1",
+      "name": "isLocatedIn"
+    }
+  ]
+}

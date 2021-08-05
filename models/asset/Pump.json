@@ -1,0 +1,9 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:asset:Pump;1",
+  "@type": "Interface",
+  "displayName": "Pump",
+  "extends": [
+    "dtmi:sample:aqueduct:asset:Base;1"
+  ]
+}

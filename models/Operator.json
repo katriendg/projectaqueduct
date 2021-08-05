@@ -1,0 +1,25 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Operator;1",
+  "@type": "Interface",
+  "displayName": "Operator",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema": "string",
+      "comment": "Name of the operator"
+    },
+    {
+      "@type": "Property",
+      "name": "Email",
+      "schema": "string",
+      "comment": "Email address of the operator"
+    },
+    {
+      "@type": "Relationship",
+      "target": "dtmi:sample:aqueduct:Area;1",
+      "name": "isServing"
+    }
+  ]
+}

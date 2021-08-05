@@ -1,0 +1,34 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:device:Valve;1",
+  "@type": "Interface",
+  "displayName": "ValveDevice",
+  "extends": [
+    "dtmi:sample:aqueduct:device:Base;1"
+  ],
+  "contents": [
+    {
+      "@type": [
+        "Property"
+      ],
+      "name": "OpenStatus",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "closed",
+            "displayName": "Closed",
+            "enumValue": 0
+          },
+          {
+            "name": "Open",
+            "displayName": "Open",
+            "enumValue": 1
+          }
+        ]
+      },
+      "comment": "Open or Closed status of the virtual valve device"
+    }
+  ]
+}

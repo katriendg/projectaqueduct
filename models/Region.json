@@ -1,0 +1,14 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:Region;1",
+  "@type": "Interface",
+  "displayName": "Region",
+  "contents": [
+    {
+      "@type": "Property",
+      "name": "Name",
+      "schema": "string",
+      "comment": "Name of the region"
+    }
+  ]
+}
