@@ -9,6 +9,43 @@
       "name": "Name",
       "schema": "string",
       "comment": "Name of the region"
+    },
+    {
+      "@type": "Property",
+      "name": "OperationalStatus",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "unknown",
+            "displayName": "Unknown",
+            "enumValue": 0
+          },
+          {
+            "name": "ok",
+            "displayName": "Ok",
+            "enumValue": 1
+          },
+          {
+            "name": "warning",
+            "displayName": "Warning",
+            "enumValue": 2
+          },
+          {
+            "name": "alarm",
+            "displayName": "Alarm",
+            "enumValue": 3
+          }
+        ]
+      },
+      "comment": "Operational status of the Region"
+    },
+    {
+      "@type": "Property",
+      "name": "OperationalStatusReason",
+      "schema": "string",
+      "comment": "Description of the operational status."
     }
   ]
 }

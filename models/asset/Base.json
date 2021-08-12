@@ -36,7 +36,7 @@
     },
     {
       "@type": "Property",
-      "name": "FlowQuality",
+      "name": "FlowCondition",
       "schema": {
         "@type": "Enum",
         "valueSchema": "integer",
@@ -44,21 +44,54 @@
           {
             "name": "unknown",
             "displayName": "Unknown",
-            "enumValue": 0
+            "enumValue": 0,
+            "description": "Flow condition is unknown"
           },
           {
-            "name": "ok",
-            "displayName": "Ok",
-            "enumValue": 1
+            "name": "under",
+            "displayName": "Under",
+            "enumValue": 1,
+            "description": "Flow is below lowest value (below 0)"
           },
           {
-            "name": "nok",
-            "displayName": "NotOk",
-            "enumValue": 2
+            "name": "no",
+            "displayName": "No",
+            "enumValue": 2,
+            "description": "There is no flow (at 0)"
+          },
+          {
+            "name": "low",
+            "displayName": "Low",
+            "enumValue": 3,
+            "description": "Flow is at low value (between 0 and Margin)"
+          },
+          {
+            "name": "normal",
+            "displayName": "Normal",
+            "enumValue": 4,
+            "description": "Flow is normal (between Margin and Capacity-Margin)"
+          },
+          {
+            "name": "high",
+            "displayName": "High",
+            "enumValue": 5,
+            "description": "Flow is at high value (between Capacity-Margin and Capacity)"
+          },
+          {
+            "name": "max",
+            "displayName": "Max",
+            "enumValue": 6,
+            "description": "Flow is at maximum value (at Capacity)"
+          },
+          {
+            "name": "over",
+            "displayName": "Over",
+            "enumValue": 7,
+            "description": "Flow is above maximum value (above Capacity)"
           }
         ]
       },
-      "comment": "Quality of flow, ok=flowing as expected, nok=not flowing as expected"
+      "comment": "Condition of flow"
     },
     {
       "@type": [
@@ -100,21 +133,54 @@
           {
             "name": "unknown",
             "displayName": "Unknown",
-            "enumValue": 0
+            "enumValue": 0,
+            "description": "Pressure condition is unknown"
           },
           {
-            "name": "ok",
-            "displayName": "Ok",
-            "enumValue": 1
+            "name": "under",
+            "displayName": "Under",
+            "enumValue": 1,
+            "description": "Pressure is below lowest value (below 0)"
           },
           {
-            "name": "nok",
-            "displayName": "NotOk",
-            "enumValue": 2
+            "name": "no",
+            "displayName": "No",
+            "enumValue": 2,
+            "description": "There is no pressure (at 0)"
+          },
+          {
+            "name": "low",
+            "displayName": "Low",
+            "enumValue": 3,
+            "description": "Pressure is at low value (between 0 and Margin)"
+          },
+          {
+            "name": "normal",
+            "displayName": "Normal",
+            "enumValue": 4,
+            "description": "Pressure is normal (between Margin and Capacity-Margin)"
+          },
+          {
+            "name": "high",
+            "displayName": "High",
+            "enumValue": 5,
+            "description": "Pressure is at high value (between Capacity-Margin and Capacity)"
+          },
+          {
+            "name": "max",
+            "displayName": "Max",
+            "enumValue": 6,
+            "description": "Pressure is at maximum value (at Capacity)"
+          },
+          {
+            "name": "over",
+            "displayName": "Over",
+            "enumValue": 7,
+            "description": "Pressure is above maximum value (above Capacity)"
           }
         ]
       },
-      "comment": "Quality of pressure, ok=pressure as expected, nok=pressure not as expected"
+      "comment": "Condition of pressure"
     },
     {
       "@type": [

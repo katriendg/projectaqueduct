@@ -70,20 +70,20 @@ namespace ProjectAqueduct.Functions
                     updateTwinData.AppendAdd("/FlowVolume", flowVolume);
                 }
 
-                // Update asset flow quality if capacity and margin are set
+                // Update asset flow condition if capacity and margin are set
                 if (attachedTwin.Contents.TryGetValue("FlowCapacity", out object flowCapacityValue) &&
                     attachedTwin.Contents.TryGetValue("FlowMargin", out object flowMarginValue))
                 {
                     double flowCapacity = ((JsonElement)flowCapacityValue).GetDouble();
                     double flowMargin = ((JsonElement)flowMarginValue).GetDouble();
-                    int quality = (Math.Abs(flowCapacity - flowVolume) <= flowMargin) ? 1 /* ok */ : 2 /* nok */;
-                    if (attachedTwin.Contents.TryGetValue("FlowQuality", out object flowQualityValue))
+                    int condition = GetCondition(flowVolume, flowCapacity, flowMargin);
+                    if (attachedTwin.Contents.TryGetValue("FlowCondition", out object flowConditionValue))
                     {
-                        updateTwinData.AppendReplace("/FlowQuality", quality);
+                        updateTwinData.AppendReplace("/FlowCondition", condition);
                     }
                     else
                     {
-                        updateTwinData.AppendAdd("/FlowQuality", quality);
+                        updateTwinData.AppendAdd("/FlowCondition", condition);
                     }
                 }
 
@@ -91,6 +91,19 @@ namespace ProjectAqueduct.Functions
                 await client.UpdateDigitalTwinAsync(attachedTwinId, updateTwinData);
                 logger.LogInformation($"Patch twin '{attachedTwinId}' using {updateTwinData.ToString()}");
             }
+        }
+
+        private static int GetCondition(double flowVolume, double flowCapacity, double flowMargin)
+        {
+            int condition;
+            if (flowVolume < -0.1) condition = 1; /* under */
+            else if (flowVolume < 0.5) condition = 2; /* no */
+            else if (flowVolume < flowMargin) condition = 3; /* low */
+            else if (flowVolume < flowCapacity - flowMargin) condition = 4; /* normal */
+            else if (flowVolume < flowCapacity - 0.5) condition = 5; /* high */
+            else if (flowVolume <= flowCapacity + 0.1) condition = 6; /* max */
+            else condition = 7; /* over */
+            return condition;
         }
     }
 }
