@@ -59,23 +59,23 @@ namespace ProjectAqueduct.Functions
                 Response<BasicDigitalTwin> twinResponse = await client.GetDigitalTwinAsync<BasicDigitalTwin>(attachedTwinId);
                 attachedTwin = twinResponse.Value;
 
-                // Update asset flow quality of capacity and margin are set
+                // Create patch document to update the asset twin
+                var updateTwinData = new JsonPatchDocument();
+                if (attachedTwin.Contents.TryGetValue("FlowVolume", out object flowVolumeValue))
+                {
+                    updateTwinData.AppendReplace("/FlowVolume", flowVolume);
+                }
+                else
+                {
+                    updateTwinData.AppendAdd("/FlowVolume", flowVolume);
+                }
+
+                // Update asset flow quality if capacity and margin are set
                 if (attachedTwin.Contents.TryGetValue("FlowCapacity", out object flowCapacityValue) &&
                     attachedTwin.Contents.TryGetValue("FlowMargin", out object flowMarginValue))
                 {
                     double flowCapacity = ((JsonElement)flowCapacityValue).GetDouble();
                     double flowMargin = ((JsonElement)flowMarginValue).GetDouble();
-
-                    // Create patch document to update the asset twin
-                    var updateTwinData = new JsonPatchDocument();
-                    if (attachedTwin.Contents.TryGetValue("FlowVolume", out object flowVolumeValue))
-                    {
-                        updateTwinData.AppendReplace("/FlowVolume", flowVolume);
-                    }
-                    else
-                    {
-                        updateTwinData.AppendAdd("/FlowVolume", flowVolume);
-                    }
                     int quality = (Math.Abs(flowCapacity - flowVolume) <= flowMargin) ? 1 /* ok */ : 2 /* nok */;
                     if (attachedTwin.Contents.TryGetValue("FlowQuality", out object flowQualityValue))
                     {
@@ -85,9 +85,11 @@ namespace ProjectAqueduct.Functions
                     {
                         updateTwinData.AppendAdd("/FlowQuality", quality);
                     }
-                    await client.UpdateDigitalTwinAsync(attachedTwinId, updateTwinData);
-                    logger.LogInformation($"Patch twin '{attachedTwinId}' using {updateTwinData.ToString()}");
                 }
+
+                // Update the asset twin
+                await client.UpdateDigitalTwinAsync(attachedTwinId, updateTwinData);
+                logger.LogInformation($"Patch twin '{attachedTwinId}' using {updateTwinData.ToString()}");
             }
         }
     }
