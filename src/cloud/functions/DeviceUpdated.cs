@@ -76,7 +76,7 @@ namespace ProjectAqueduct.Functions
                 {
                     double flowCapacity = ((JsonElement)flowCapacityValue).GetDouble();
                     double flowMargin = ((JsonElement)flowMarginValue).GetDouble();
-                    int condition = GetCondition(flowVolume, flowCapacity, flowMargin);
+                    int condition = GetAssetCondition(flowVolume, flowCapacity, flowMargin);
                     if (attachedTwin.Contents.TryGetValue("FlowCondition", out object flowConditionValue))
                     {
                         updateTwinData.AppendReplace("/FlowCondition", condition);
@@ -93,7 +93,7 @@ namespace ProjectAqueduct.Functions
             }
         }
 
-        private static int GetCondition(double flowVolume, double flowCapacity, double flowMargin)
+        private static int GetAssetCondition(double flowVolume, double flowCapacity, double flowMargin)
         {
             int condition;
             if (flowVolume < -0.1) condition = 1; /* under */

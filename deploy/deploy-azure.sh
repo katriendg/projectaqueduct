@@ -7,6 +7,7 @@ then
 fi
 
 # Get input parameters
+enableDebugging=false
 reuseResourceGroup=false
 while [[ $# -gt 0 ]]
 do
@@ -26,6 +27,10 @@ do
         reuseResourceGroup=true
         shift # past argument
         ;;
+    -d|--enableDebugging)
+        enableDebugging=true
+        shift # past argument
+        ;;
     -h|--help)
         echo "Create environment in Azure, containing EH, Functions, ADT."
         echo ""
@@ -33,6 +38,7 @@ do
         echo "  -p, --prefix=PREFIX  prefix used for Azure resource names"
         echo "  -l, --location=LOCATION  location to create Azure resources, default westeurope"
         echo "  -r, --reuse  reuse the resource group if it already exists"
+        echo "  -d, --enableDebugging  add access of local user to Azure resources for Azure Functions debugging"
         echo ""
         shift # past argument
         ;;
@@ -138,22 +144,27 @@ echo "Azure Digital Twin instance $adtName created."
 adtPrincipalId=$(az dt show -g $rgName -n $adtName --query "identity.principalId" -o tsv)
 echo "  Azure Digital Twin $adtName is using managed service identity ($adtPrincipalId)."
 az dt wait -g $rgName -n $adtName --custom "provisioningState=='Succeeded'"
-az dt role-assignment create -n $adtName --assignee $userName --role "Azure Digital Twins Data Owner" -o none
+az dt role-assignment create -n $adtName --assignee $userName --role "Azure Digital Twins Data Owner" -o none ## needed to set the adt routing rules
 # Check for role assignment
 while (true)
 do
-  assignedUserNames=$(az dt role-assignment list -g $rgName -n $adtName --role "Azure Digital Twins Data Owner" --query "[].principalName" -o tsv)
-  if [[ $assignedUserNames == *$userName* ]]
-  then
-    break
-  fi
-  sleep 1
+    assignedUserNames=$(az dt role-assignment list -g $rgName -n $adtName --role "Azure Digital Twins Data Owner" --query "[].principalName" -o tsv)
+    if [[ $assignedUserNames == *$userName* ]]
+    then
+        break
+    fi
+    sleep 1
 done
 echo "  User $userName added as Data Owner to Azure Digital Twin $adtName."
 
 # Configure Access Control
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+if $enableDebugging
+then
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+fi
 az dt role-assignment create -n $adtName --assignee $fnaPrincipalId --role "Azure Digital Twins Data Owner" -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehAssetUpdatesId -o none
