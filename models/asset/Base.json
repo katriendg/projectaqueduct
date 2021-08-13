@@ -1,0 +1,206 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:asset:Base;1",
+  "@type": "Interface",
+  "displayName": "BaseAsset",
+  "contents": [
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowCapacity",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Maximum flow capacity in litres per second"
+    },
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowVolume",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Current flow volume in litres per second"
+    },
+    {
+      "@type": [
+        "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "FlowMargin",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Expected margin between maximum flow capacity and current flow volume in litres per second"
+    },
+    {
+      "@type": "Property",
+      "name": "FlowCondition",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "unknown",
+            "displayName": "Unknown",
+            "enumValue": 0,
+            "description": "Flow condition is unknown"
+          },
+          {
+            "name": "under",
+            "displayName": "Under",
+            "enumValue": 1,
+            "description": "Flow is below lowest value (below 0)"
+          },
+          {
+            "name": "no",
+            "displayName": "No",
+            "enumValue": 2,
+            "description": "There is no flow (at 0)"
+          },
+          {
+            "name": "low",
+            "displayName": "Low",
+            "enumValue": 3,
+            "description": "Flow is at low value (between 0 and Margin)"
+          },
+          {
+            "name": "normal",
+            "displayName": "Normal",
+            "enumValue": 4,
+            "description": "Flow is normal (between Margin and Capacity-Margin)"
+          },
+          {
+            "name": "high",
+            "displayName": "High",
+            "enumValue": 5,
+            "description": "Flow is at high value (between Capacity-Margin and Capacity)"
+          },
+          {
+            "name": "max",
+            "displayName": "Max",
+            "enumValue": 6,
+            "description": "Flow is at maximum value (at Capacity)"
+          },
+          {
+            "name": "over",
+            "displayName": "Over",
+            "enumValue": 7,
+            "description": "Flow is above maximum value (above Capacity)"
+          }
+        ]
+      },
+      "comment": "Condition of flow"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureCapacity",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Maximum pressure capacity in bar"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureVolume",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Current pressure volume in bar"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "PressureMargin",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Expected margin between maximum pressure capacity and current pressure volume in bar"
+    },
+    {
+      "@type": "Property",
+      "name": "PressureQuality",
+      "schema": {
+        "@type": "Enum",
+        "valueSchema": "integer",
+        "enumValues": [
+          {
+            "name": "unknown",
+            "displayName": "Unknown",
+            "enumValue": 0,
+            "description": "Pressure condition is unknown"
+          },
+          {
+            "name": "under",
+            "displayName": "Under",
+            "enumValue": 1,
+            "description": "Pressure is below lowest value (below 0)"
+          },
+          {
+            "name": "no",
+            "displayName": "No",
+            "enumValue": 2,
+            "description": "There is no pressure (at 0)"
+          },
+          {
+            "name": "low",
+            "displayName": "Low",
+            "enumValue": 3,
+            "description": "Pressure is at low value (between 0 and Margin)"
+          },
+          {
+            "name": "normal",
+            "displayName": "Normal",
+            "enumValue": 4,
+            "description": "Pressure is normal (between Margin and Capacity-Margin)"
+          },
+          {
+            "name": "high",
+            "displayName": "High",
+            "enumValue": 5,
+            "description": "Pressure is at high value (between Capacity-Margin and Capacity)"
+          },
+          {
+            "name": "max",
+            "displayName": "Max",
+            "enumValue": 6,
+            "description": "Pressure is at maximum value (at Capacity)"
+          },
+          {
+            "name": "over",
+            "displayName": "Over",
+            "enumValue": 7,
+            "description": "Pressure is above maximum value (above Capacity)"
+          }
+        ]
+      },
+      "comment": "Condition of pressure"
+    },
+    {
+      "@type": [
+        "Property",
+        "Temperature"
+      ],
+      "name": "Temperature",
+      "schema": "double",
+      "unit": "degreeCelsius",
+      "comment": "Temperature"
+    },
+    {
+      "@type": "Relationship",
+      "target": "dtmi:sample:aqueduct:asset:Base;1",
+      "name": "isFlowingTo"
+    },
+    {
+      "@type": "Relationship",
+      "target": "dtmi:sample:aqueduct:Area;1",
+      "name": "isLocatedIn"
+    }    
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:asset:FireHydrant;1",
+  "@type": "Interface",
+  "displayName": "FireHydrant",
+  "extends": [
+    "dtmi:sample:aqueduct:asset:PointOfUse;1"
+  ]
+}

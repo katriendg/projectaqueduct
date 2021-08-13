@@ -1,0 +1,7 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:sample:aqueduct:asset:Junction;1",
+  "@type": "Interface",
+  "displayName": "Junction",
+  "extends": "dtmi:sample:aqueduct:asset:Pipe;1"
+}
