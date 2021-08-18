@@ -96,6 +96,16 @@
     {
       "@type": [
         "Property",
+        "VolumeFlowRate"
+      ],
+      "name": "ExpectedFlowVolume",
+      "schema": "double",
+      "unit": "litrePerSecond",
+      "comment": "Expected flow volume in litres per second"
+    },
+    {
+      "@type": [
+        "Property",
         "Pressure"
       ],
       "name": "PressureCapacity",
@@ -181,6 +191,16 @@
         ]
       },
       "comment": "Condition of pressure"
+    },
+    {
+      "@type": [
+        "Property",
+        "Pressure"
+      ],
+      "name": "ExpectedPressureVolume",
+      "schema": "double",
+      "unit": "bar",
+      "comment": "Expected pressure volume in bar"
     },
     {
       "@type": [

@@ -48,6 +48,9 @@ do
     esac
 done
 
+# Log Start time
+date
+
 # Validate input paremeters
 if [[ -z "$prefixName" ]]
 then
@@ -102,11 +105,18 @@ storageId=$(az storage account show -g $rgName -n $storageName --query "id" -o t
 echo "Storage $storageName created."
 az monitor diagnostic-settings create --resource $storageId --workspace $workspaceName -n "all" -o none \
 
+
 # Create application insights connected to log workspace
 aiName="${prefixName}ai"
 az extension add --name application-insights
 az monitor app-insights component create -g $rgName --app $aiName --location $locationName --workspace $workspaceName -o none
 echo "Application Insights component $aiName created."
+
+# Create ADX cluster
+kustoName="${prefixName}adx"
+az extension add --name kusto
+az kusto cluster create --name $kustoName -g $rgName -l $locationName --sku name="Dev(No SLA)_Standard_E2a_v4" tier="Basic" capacity=1 --no-wait --enable-streaming-ingest --type SystemAssigned
+echo "Azure Data Explorer (Kusto) resource $kustoName started creation, silently continuing."
 
 # Create function app on consumption plan
 # ToDo: Create consumption plan first, not possible from Azure CLI at the moment
@@ -135,6 +145,12 @@ az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehAsse
 az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehAssetUpdatesName --name $fnaName -o none
 ehAssetUpdatesId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehAssetUpdatesName --query "id" -o tsv)
 echo "  Event Hub $ehAssetUpdatesName in Event Hubs namespace $ehnName created."
+ehTwinHistRawName="twin-history"
+az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwinHistRawName --partition-count 1 -o none
+az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistRawName --name $fnaName -o none
+ehTwinHistRawId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistRawName --query "id" -o tsv)
+echo "  Event Hub $ehTwinHistRawName in Event Hubs namespace $ehnName created."
+
 
 # Create digital twin
 adtName="${prefixName}adt"
@@ -158,16 +174,20 @@ done
 echo "  User $userName added as Data Owner to Azure Digital Twin $adtName."
 
 # Configure Access Control
+az role assignment create --assignee $fnaPrincipalId --role "Storage Blob Data Owner" --scope $storageId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+
 if $enableDebugging
 then
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
 fi
 az dt role-assignment create -n $adtName --assignee $fnaPrincipalId --role "Azure Digital Twins Data Owner" -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehAssetUpdatesId -o none
+az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehTwinHistRawId -o none
 echo "Access Control configured."
 
 # Create digital twins routing rules
@@ -175,12 +195,33 @@ az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehDeviceU
 az dt route create -g $rgName -n $adtName --route-name $ehDeviceUpdatesName --endpoint-name $ehDeviceUpdatesName --filter "type='Microsoft.DigitalTwins.Twin.Update' AND STARTS_WITH(\$body.modelId, 'dtmi:sample:aqueduct:device:')" -o none
 az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehAssetUpdatesName --ehg $rgName --ehn $ehnName --eh $ehAssetUpdatesName --auth-type IdentityBased -o none
 az dt route create -g $rgName -n $adtName --route-name $ehAssetUpdatesName --endpoint-name $ehAssetUpdatesName --filter "type='Microsoft.DigitalTwins.Twin.Update' AND STARTS_WITH(\$body.modelId, 'dtmi:sample:aqueduct:asset:')" -o none
+az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehTwinHistRawName --ehg $rgName --ehn $ehnName --eh $ehTwinHistRawName --auth-type IdentityBased -o none
+az dt route create -g $rgName -n $adtName --route-name $ehTwinHistRawName --endpoint-name $ehTwinHistRawName --filter "type = 'Microsoft.DigitalTwins.Twin.Update' OR type = 'Microsoft.DigitalTwins.Relationship.Update'" -o none
 echo "Azure Digital Twin routing rules created."
 
 # Configure Function App
+az functionapp config appsettings set -g $rgName -n $fnaName --settings "AzureWebJobsStorage__accountName=$storageName" -o none
 az functionapp config appsettings set -g $rgName -n $fnaName --settings "EventHubConnection__fullyQualifiedNamespace=$ehnName.servicebus.windows.net" -o none
 az functionapp config appsettings set -g $rgName -n $fnaName --settings "FUNCTIONS_WORKER_RUNTIME=dotnet-isolated" -o none
 echo "Function app configured."
+
+#validate ADX is created successfully, wait to finish until it is
+echo "Now waiting for ADX Kusto cluster to be created"
+az kusto cluster wait --cluster-name $kustoName --resource-group $rgName --created
+echo "created"
+kustoPrincipalId=$(az kusto cluster show -g $rgName -n $kustoName --query "identity.principalId" -o tsv)
+echo "  ADX (Kusto) $kustoName is using managed service identity ($kustoPrincipalId)."
+#Assign current User Id
+az kusto cluster-principal-assignment create --cluster-name $kustoName --resource-group $rgName --principal-id $userName --principal-type "User" --role "AllDatabasesAdmin"  --principal-assignment-name "creatorPrincipalAssign1" -o none
+
+#create database
+kustoDbName="adtHistoryDb"
+az kusto database create --cluster-name $kustoName --resource-group $rgName --database-name $kustoDbName --read-write-database soft-delete-period=P365D hot-cache-period=P31D location=westeurope  -o none
+#role assigment
+az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
+
+# TODO download kusto.CLI, extract and run
+# wget 
 
 # Log end time
 date
