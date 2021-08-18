@@ -174,6 +174,7 @@ done
 echo "  User $userName added as Data Owner to Azure Digital Twin $adtName."
 
 # Configure Access Control
+az role assignment create --assignee $fnaPrincipalId --role "Storage Blob Data Owner" --scope $storageId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
 
@@ -199,6 +200,7 @@ az dt route create -g $rgName -n $adtName --route-name $ehTwinHistRawName --endp
 echo "Azure Digital Twin routing rules created."
 
 # Configure Function App
+az functionapp config appsettings set -g $rgName -n $fnaName --settings "AzureWebJobsStorage__accountName=$storageName" -o none
 az functionapp config appsettings set -g $rgName -n $fnaName --settings "EventHubConnection__fullyQualifiedNamespace=$ehnName.servicebus.windows.net" -o none
 az functionapp config appsettings set -g $rgName -n $fnaName --settings "FUNCTIONS_WORKER_RUNTIME=dotnet-isolated" -o none
 echo "Function app configured."
