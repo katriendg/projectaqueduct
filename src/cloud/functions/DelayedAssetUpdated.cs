@@ -37,7 +37,7 @@ namespace ProjectAqueduct.Functions
             }
 
             // Update the twin
-            await client.UpdateDigitalTwinAsync(attachedTwinId, updateTwinData);
+            await client.UpdateDigitalTwinAsync(twinMessage.twinId, updateTwinData);
             logger.LogInformation($"Delayed update asset '{twinMessage.twinId}' with {twinMessage.ToString()}.");
         }
     }
