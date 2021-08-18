@@ -25,8 +25,8 @@ namespace ProjectAqueduct.Functions
             for (int i = 0; i < messages.Length; i++)
             {
                 // Create connection to the Azure Digital Twin instance
-                string adtInstanceUrl = "https://" + properties[i]["cloudEvents:source"];
-                var client = new DigitalTwinsClient(new Uri(adtInstanceUrl), credentials);
+                string adtInstance = properties[i]["cloudEvents:source"];
+                var client = new DigitalTwinsClient(new Uri("https://" + adtInstance), credentials);
 
                 // Get and validate the asset twin from the message
                 string assetTwinId = properties[i]["cloudEvents:subject"];
