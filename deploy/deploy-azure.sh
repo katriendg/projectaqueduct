@@ -147,7 +147,7 @@ ehAssetUpdatesId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnNa
 echo "  Event Hub $ehAssetUpdatesName in Event Hubs namespace $ehnName created."
 ehTwinHistRawName="twin-history"
 az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwinHistRawName --partition-count 1 -o none
-az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistRawName --name $fnaName -o none
+az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistRawName --name $kustoName -o none
 ehTwinHistRawId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistRawName --query "id" -o tsv)
 echo "  Event Hub $ehTwinHistRawName in Event Hubs namespace $ehnName created."
 
@@ -211,12 +211,15 @@ kustoPrincipalId=$(az kusto cluster show -g $rgName -n $kustoName --query "ident
 echo "  ADX (Kusto) $kustoName is using managed service identity ($kustoPrincipalId)."
 #Assign current User Id
 az kusto cluster-principal-assignment create --cluster-name $kustoName --resource-group $rgName --principal-id $userName --principal-type "User" --role "AllDatabasesAdmin"  --principal-assignment-name "creatorPrincipalAssign1" -o none
+echo "Kusto cluster principal assignment done for User $userName"
 
 #create database
 kustoDbName="adtHistoryDb"
 az kusto database create --cluster-name $kustoName --resource-group $rgName --database-name $kustoDbName --read-write-database soft-delete-period=P365D hot-cache-period=P31D location=westeurope  -o none
-#role assigment
+echo "Kusto database $kustoDbName created"
+#role assigment for EH
 az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
+echo "Kusto MSI ID added as Event Hubs Data Receiver"
 
 # TODO download kusto.CLI, extract and run
 # wget 
