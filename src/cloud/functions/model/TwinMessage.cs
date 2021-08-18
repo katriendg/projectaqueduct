@@ -8,4 +8,10 @@ namespace ProjectAqueduct.Functions.Model
 
         public IList<Patch> patch { get; set; }
     }
+
+    public class TwinMessageExt : TwinMessage
+    {
+        public string adtInstance { get; set; }
+        public string twinId { get; set; }
+    }
 }
