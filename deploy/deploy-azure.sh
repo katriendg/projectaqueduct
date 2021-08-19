@@ -145,12 +145,16 @@ az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehAsse
 az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehAssetUpdatesName --name $fnaName -o none
 ehAssetUpdatesId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehAssetUpdatesName --query "id" -o tsv)
 echo "  Event Hub $ehAssetUpdatesName in Event Hubs namespace $ehnName created."
-ehTwinHistRawName="twin-history"
+ehTwinHistRawName="twin-history-raw"
 az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwinHistRawName --partition-count 1 -o none
-az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistRawName --name $kustoName -o none
+az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistRawName --name $fnaName -o none
 ehTwinHistRawId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistRawName --query "id" -o tsv)
 echo "  Event Hub $ehTwinHistRawName in Event Hubs namespace $ehnName created."
-
+ehTwinHistoryProcessed="twin-history-adx"
+az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwinHistoryProcessed --partition-count 2 -o none
+az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistoryProcessed --name $kustoName -o none
+ehTwinHistProcessedId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistoryProcessed --query "id" -o tsv)
+echo "  Event Hub $ehTwinHistoryProcessed in Event Hubs namespace $ehnName created."
 
 # Create digital twin
 adtName="${prefixName}adt"
@@ -177,17 +181,21 @@ echo "  User $userName added as Data Owner to Azure Digital Twin $adtName."
 az role assignment create --assignee $fnaPrincipalId --role "Storage Blob Data Owner" --scope $storageId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
 
 if $enableDebugging
 then
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistProcessedId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Sender" --scope $ehTwinHistProcessedId -o none
 fi
 az dt role-assignment create -n $adtName --assignee $fnaPrincipalId --role "Azure Digital Twins Data Owner" -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehAssetUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehTwinHistRawId -o none
+az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehTwinHistProcessedId -o none
 echo "Access Control configured."
 
 # Create digital twins routing rules
@@ -220,11 +228,30 @@ kustoDbName="adtHistoryDb"
 az kusto database create --cluster-name $kustoName --resource-group $rgName --database-name $kustoDbName --read-write-database soft-delete-period=P365D hot-cache-period=P31D location=westeurope  -o none
 echo "Kusto database $kustoDbName created"
 #role assigment for EH
-az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistRawId -o none
-echo "Kusto MSI ID added as Event Hubs Data Receiver"
+az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistProcessedId -o none
+echo "Kusto access to Event Hubs Data Receiver added"
 
-# TODO download kusto.CLI, extract and run
-# wget 
+#Upload Kusto script to blob for temp SAS
+expiretime=$(date -u -d '30 minutes' +%Y-%m-%dT%H:%MZ)
+storageConnectionString=$(az storage account show-connection-string -n $storageName -g $rgName --query connectionString -o tsv)
+storageContainerAdx="kustotemp"
+blobName="kusto.txt"
+az storage container create -n $storageContainerAdx --connection-string $storageConnectionString -o none
+az storage blob upload -c $storageContainerAdx -f "kusto.txt" -n $blobName --connection-string $storageConnectionString -o none
+url=$(az storage blob url -c $storageContainerAdx --connection-string $storageConnectionString -n $blobName -o tsv)
+sas=$(az storage blob generate-sas --connection-string $storageConnectionString -c $storageContainerAdx -n $blobName --permissions r  --expiry $expiretime -o tsv)
 
+#execute ARM template for Kusto script
+az deployment group create --name kustoconfig --resource-group $rgName --template-file kustoconfig.json --parameters scriptUrl=$url scriptUrlSastoken=$sas "clusterName=$kustoName" "databaseName=$kustoDbName" "scriptName=kusto.txt" -o none
+echo "Configured ADX table and mapping"
+
+#delete temporary blob container
+az storage container delete -n $storageContainerAdx --connection-string $storageConnectionString -o none
+
+# enable data ingestion eh setup after Kusto create table commands above
+az kusto data-connection event-hub create --cluster-name $kustoName --resource-group $rgName --database-name adtHistoryDb  --compression None --consumer-group $kustoName --data-connection-name twinhistory --data-format MULTIJSON --event-hub-resource-id $ehTwinHistProcessedId --mapping-rule-name "rawAdtHistory_mapping" --table-name rawAdtHistory -o none
+echo "Configured ADX EH Ingestion"
+
+echo "FINISHED"
 # Log end time
 date
