@@ -34,6 +34,11 @@
       "unit": "bar"
     },
     {
+      "@type": "Property",
+      "name": "SensorTimestamp",
+      "schema": "dateTime"
+    },
+    {
       "@type": "Relationship",
       "target": "dtmi:sample:aqueduct:asset:Base;1",
       "name": "isAttachedTo"
