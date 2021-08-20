@@ -14,7 +14,7 @@ namespace ProjectAqueduct.Functions
     public static class DeviceUpdated
     {
         [Function("DeviceUpdated")]
-        public static async Task Run([EventHubTrigger("device-updates", Connection = "EventHubConnection")] string[] messages, FunctionContext context)
+        public static async Task Run([EventHubTrigger("device-updates", Connection = "EventHubConnection", ConsumerGroup = "function")] string[] messages, FunctionContext context)
         {
             var logger = context.GetLogger("DeviceUpdated");
             var data = context.BindingContext.BindingData;

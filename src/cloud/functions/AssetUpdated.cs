@@ -14,7 +14,7 @@ namespace ProjectAqueduct.Functions
     public static class AssetUpdated
     {
         [Function("AssetUpdated")]
-        public static async Task Run([EventHubTrigger("asset-updates", Connection = "EventHubConnection")] string[] messages, FunctionContext context)
+        public static async Task Run([EventHubTrigger("asset-updates", Connection = "EventHubConnection", ConsumerGroup = "function")] string[] messages, FunctionContext context)
         {
             var logger = context.GetLogger("AssetUpdated");
             var data = context.BindingContext.BindingData;

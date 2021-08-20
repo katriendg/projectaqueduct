@@ -15,7 +15,7 @@ namespace ProjectAqueduct.Functions
     public static class AssetFlow
     {
         [Function("AssetFlow")]
-        public static async Task Run([EventHubTrigger("asset-flow", Connection = "EventHubConnection")] string[] messages, FunctionContext context)
+        public static async Task Run([EventHubTrigger("asset-flow", Connection = "EventHubConnection", ConsumerGroup = "function")] string[] messages, FunctionContext context)
         {
             var logger = context.GetLogger("AssetFlow");
             var data = context.BindingContext.BindingData;
@@ -38,7 +38,13 @@ namespace ProjectAqueduct.Functions
                     // Get the updated value
                     foreach (var patch in twinMessage.patch)
                     {
+                        // For actual value updates, also update the expected value
                         if (patch.path == "/FlowVolume")
+                        {
+                            await UpdateAssetTwin(client, assetTwinId, "ExpectedFlowVolume", patch.value, logger);
+                        }
+                        // For expected value updates, update the connected assets depending on the asset type
+                        else if (patch.path == "/ExpectedFlowVolume")
                         {
                             double flowVolume = patch.value.GetDouble();
                             Response<BasicDigitalTwin> twinResponse = await client.GetDigitalTwinAsync<BasicDigitalTwin>(assetTwinId);
@@ -51,21 +57,12 @@ namespace ProjectAqueduct.Functions
                                 {
                                     double diameter = ((JsonElement)diameterValue).GetDouble(); // cm
                                     double length = ((JsonElement)lengthValue).GetDouble(); // m
-                                    logger.LogInformation($"Pipe '{assetTwinId}' found with diameter {diameter}cm and length {length}m");
-
                                     double flowArea = Math.PI * Math.Pow((diameter / 100 / 2), 2); // π * (diameter / 2)² in m²
                                     double assetVolume = 1000 * length * flowArea; // in liter
                                     double secondsToFlow = assetVolume / flowVolume; // seconds needed to flow through the pipe
-                                    logger.LogInformation($"Water takes {secondsToFlow} seconds to flow through pipe '{assetTwinId}' at {flowVolume} liter/sec.");
-
                                     string flowingToTwinId = await GetFlowingToAsset(client, assetTwinId, logger);
-                                    await UpdateTwinAfter(adtInstance, twinMessage.modelId, flowingToTwinId, "FlowVolume", (double)(flowVolume), secondsToFlow, logger);
-                                }
-                            }
-                            else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Reservoir;1"))
-                            {
-                                if (assetTwin.Contents.TryGetValue("Volume", out object volumeValue))
-                                {
+                                    await UpdateAssetTwinAfter(adtInstance, twinMessage.modelId, flowingToTwinId, "ExpectedFlowVolume", (double)(flowVolume), secondsToFlow, logger);
+                                    logger.LogInformation($"Expectation: Water takes {secondsToFlow} seconds to flow through pipe '{assetTwinId}' to '{flowingToTwinId}' at {flowVolume} liter/sec.");
                                 }
                             }
                             else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Junction;1"))
@@ -75,13 +72,39 @@ namespace ProjectAqueduct.Functions
                                 foreach(var flowingTo in assetCapacity) totalCapacity += flowingTo.Value;
                                 foreach(var flowingTo in assetCapacity)
                                 {
-                                    await UpdateTwin(client, flowingTo.Key, "FlowVolume", (double)(flowVolume * flowingTo.Value / totalCapacity), logger);
+                                    double splitFlowVolume = flowVolume * flowingTo.Value / totalCapacity;
+                                    await UpdateAssetTwin(client, flowingTo.Key, "FlowVolume", (double)(splitFlowVolume), logger);
+                                    logger.LogInformation($"Expectation: Water flows from junction '{assetTwinId}' to '{flowingTo.Key}' at {splitFlowVolume} liter/sec.");
+                                }
+                            }
+                            else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Valve;1"))
+                            {
+                                int openStatus = 0;
+                                if (assetTwin.Contents.TryGetValue("OpenStatus", out object openStatusValue))
+                                {
+                                    openStatus = ((JsonElement)openStatusValue).GetInt32();
+                                }
+                                if (openStatus == 1)
+                                {
+                                    string flowingToTwinId = await GetFlowingToAsset(client, assetTwinId, logger);
+                                    await UpdateAssetTwin(client, flowingToTwinId, "ExpectedFlowVolume", (double)(flowVolume), logger);
+                                    logger.LogInformation($"Expectation: Water flows from open valve '{assetTwinId}' to '{flowingToTwinId}' at {flowVolume} liter/sec.");
+                                }
+                                else {
+                                    logger.LogInformation($"Expectation: Water stops flowing at closed valve '{assetTwinId}'.");
                                 }
                             }
                             else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Pump;1"))
                             {
                                 string flowingToTwinId = await GetFlowingToAsset(client, assetTwinId, logger);
-                                await UpdateTwin(client, flowingToTwinId, "FlowVolume", (double)(flowVolume), logger);
+                                await UpdateAssetTwin(client, flowingToTwinId, "ExpectedFlowVolume", (double)(flowVolume), logger);
+                                logger.LogInformation($"Expectation: Water flows from pump '{assetTwinId}' to '{flowingToTwinId}' at {flowVolume} liter/sec.");
+                            }                            
+                            else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Reservoir;1"))
+                            {
+                            }                            
+                            else if (twinMessage.modelId.StartsWith("dtmi:sample:aqueduct:asset:Tap;1"))
+                            {
                             }                            
                             break;
                         }
@@ -119,7 +142,7 @@ namespace ProjectAqueduct.Functions
             return assetCapacity;
         }
 
-        private static async Task UpdateTwin(DigitalTwinsClient client, string twinId, string property, object value, ILogger logger)
+        private static async Task UpdateAssetTwin(DigitalTwinsClient client, string twinId, string property, object value, ILogger logger)
         {
             Response<BasicDigitalTwin> twinResponse = await client.GetDigitalTwinAsync<BasicDigitalTwin>(twinId);
             BasicDigitalTwin twin = twinResponse.Value;
@@ -138,7 +161,7 @@ namespace ProjectAqueduct.Functions
             logger.LogInformation($"Update {property} of asset '{twinId}' to {value}");
         }
 
-        private static async Task UpdateTwinAfter(string adtInstance, string modelId, string twinId, string property, object value, double seconds, ILogger logger)
+        private static async Task UpdateAssetTwinAfter(string adtInstance, string modelId, string twinId, string property, object value, double seconds, ILogger logger)
         {
             var twinMessage = new TwinMessageExt();
             twinMessage.adtInstance = adtInstance;

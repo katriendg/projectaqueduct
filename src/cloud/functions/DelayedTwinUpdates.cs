@@ -12,12 +12,12 @@ using ProjectAqueduct.Functions.Model;
 
 namespace ProjectAqueduct.Functions
 {
-    public static class DelayedAssetUpdated
+    public static class DelayedTwinUpdates
     {
-        [Function("DelayedAssetUpdated")]
+        [Function("DelayedTwinUpdates")]
         public static async Task Run([ServiceBusTrigger("twin-updates", Connection = "ServiceBusConnection")] string message, FunctionContext context)
         {
-            var logger = context.GetLogger("DelayedAssetUpdated");
+            var logger = context.GetLogger("DelayedTwinUpdates");
 
             var twinMessage = JsonSerializer.Deserialize<TwinMessageExt>(message);
 
@@ -38,7 +38,7 @@ namespace ProjectAqueduct.Functions
 
             // Update the twin
             await client.UpdateDigitalTwinAsync(twinMessage.twinId, updateTwinData);
-            logger.LogInformation($"Delayed update asset '{twinMessage.twinId}' with {twinMessage.ToString()}.");
+            logger.LogInformation($"Delayed update twin '{twinMessage.twinId}' with {message}.");
         }
     }
 }
