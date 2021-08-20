@@ -1,0 +1,2 @@
+.create table rawAdtHistory(payload: dynamic)
+.create table rawAdtHistory ingestion json mapping "rawAdtHistory_mapping" @'[{"column":"payload","path":"$","datatype":"dynamic"}]'

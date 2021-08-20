@@ -151,6 +151,11 @@ az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwin
 az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistoryName --name $ehConsumerGroupName -o none
 ehTwinHistoryId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistoryName --query "id" -o tsv)
 echo "  Event Hub $ehTwinHistoryName in Event Hubs namespace $ehnName created."
+ehTwinHistoryProcessed="twin-history-adx"
+az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehTwinHistoryProcessed --partition-count 2 -o none
+az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehTwinHistoryProcessed --name $kustoName -o none
+ehTwinHistoryProcessedId=$(az eventhubs eventhub show -g $rgName --namespace-name $ehnName -n $ehTwinHistoryProcessed --query "id" -o tsv)
+echo "  Event Hub $ehTwinHistoryProcessed in Event Hubs namespace $ehnName created."
 ehDataHistoryName="data-history"
 az eventhubs eventhub create -g $rgName --namespace-name $ehnName --name $ehDataHistoryName --partition-count 1 -o none
 az eventhubs eventhub consumer-group create -g $rgName --namespace-name $ehnName --eventhub-name $ehDataHistoryName --name $ehConsumerGroupName -o none
@@ -197,21 +202,26 @@ echo "  User $userName added as Data Owner to Azure Digital Twin $adtName."
 az role assignment create --assignee $fnaPrincipalId --role "Storage Blob Data Owner" --scope $storageId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
+az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistoryId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehAssetFlowId -o none
 az role assignment create --assignee $fnaPrincipalId --role "Azure Service Bus Data Owner" --scope $sbTwinUpdatesId -o none
 az dt role-assignment create -n $adtName --assignee $fnaPrincipalId --role "Azure Digital Twins Data Owner" -o none
+
 if $enableDebugging
 then
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehDeviceUpdatesId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehAssetUpdatesId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistoryId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistoryProcessedId -o none
+    az role assignment create --assignee $userName --role "Azure Event Hubs Data Sender" --scope $ehTwinHistoryProcessedId -o none
     az role assignment create --assignee $userName --role "Azure Event Hubs Data Receiver" --scope $ehAssetFlowId -o none
-    echo "Access Control for  configured."
+    echo "Access Control for {$userName} configured."
 fi
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehDeviceUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehAssetUpdatesId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehTwinHistoryId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehDataHistoryId -o none
+az role assignment create --assignee $fnaPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehTwinHistoryProcessedId -o none
 az role assignment create --assignee $adtPrincipalId --role "Azure Event Hubs Data Sender" --scope $ehAssetFlowId -o none
 echo "Access Control configured."
 
@@ -241,19 +251,41 @@ kustoPrincipalId=$(az kusto cluster show -g $rgName -n $kustoName --query "ident
 echo "  ADX (Kusto) $kustoName is using managed service identity ($kustoPrincipalId)."
 #Assign current User Id
 az kusto cluster-principal-assignment create --cluster-name $kustoName --resource-group $rgName --principal-id $userName --principal-type "User" --role "AllDatabasesAdmin"  --principal-assignment-name "creatorPrincipalAssign1" -o none
+echo "Kusto cluster principal assignment done for User $userName"
 
 #create database
 kustoDbName="adtHistoryDb"
 az kusto database create --cluster-name $kustoName --resource-group $rgName --database-name $kustoDbName --read-write-database soft-delete-period=P365D hot-cache-period=P31D location=westeurope  -o none
-#role assigment
-az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistoryId -o none
+echo "Kusto database $kustoDbName created"
+#role assigment for EH
+az role assignment create --assignee $kustoPrincipalId --role "Azure Event Hubs Data Receiver" --scope $ehTwinHistoryProcessedId -o none
+echo "Kusto access to Event Hubs Data Receiver added"
 
-# TODO download kusto.CLI, extract and run
-# wget 
+#Upload Kusto script to blob for temp SAS
+expiretime=$(date -u -d '30 minutes' +%Y-%m-%dT%H:%MZ)
+storageConnectionString=$(az storage account show-connection-string -n $storageName -g $rgName --query connectionString -o tsv)
+storageContainerAdx="kustotemp"
+blobName="kusto.txt"
+az storage container create -n $storageContainerAdx --connection-string $storageConnectionString -o none
+az storage blob upload -c $storageContainerAdx -f "kusto.txt" -n $blobName --connection-string $storageConnectionString -o none
+url=$(az storage blob url -c $storageContainerAdx --connection-string $storageConnectionString -n $blobName -o tsv)
+sas=$(az storage blob generate-sas --connection-string $storageConnectionString -c $storageContainerAdx -n $blobName --permissions r  --expiry $expiretime -o tsv)
+
+#execute ARM template for Kusto script
+az deployment group create --name kustoconfig --resource-group $rgName --template-file kustoconfig.json --parameters scriptUrl=$url scriptUrlSastoken=$sas "clusterName=$kustoName" "databaseName=$kustoDbName" "scriptName=kusto.txt" -o none
+echo "Configured ADX table and mapping"
+
+#delete temporary blob container
+az storage container delete -n $storageContainerAdx --connection-string $storageConnectionString -o none
+
+# enable data ingestion eh setup after Kusto create table commands above
+az kusto data-connection event-hub create --cluster-name $kustoName --resource-group $rgName --database-name adtHistoryDb  --compression None --consumer-group $kustoName --data-connection-name twinhistory --data-format MULTIJSON --event-hub-resource-id $ehTwinHistProcessedId --mapping-rule-name "rawAdtHistory_mapping" --table-name rawAdtHistory -o none
+echo "Configured ADX EH Ingestion"
 
 # Create a Data History Connection between the Azure Digital Twins instance, the Event Hub, and the ADX cluster
 # This is in preview and needs a preview version of the IoT Plug-in Extension
 #az dt data-history create adx -n $adtName --cn $kustoName --adx-cluster-name $kustoName --adx-database-name $kustoDbName --eventhub $ehDataHistoryName --eventhub-consumer-group "adx" --eventhub-namespace $ehnName -o none
 
+echo "FINISHED"
 # Log end time
 date

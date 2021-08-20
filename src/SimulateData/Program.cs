@@ -112,6 +112,7 @@ namespace SimulateData
                 updateTwinData.AppendAdd("/Temperature", avgTemperature);
                 updateTwinData.AppendAdd("/Pressure", avgPressure);
                 updateTwinData.AppendAdd("/VolumeFlow", deviceInfo.FlowCapacity / 2);
+                updateTwinData.AppendAdd("/SensorTimestamp", DateTime.Now);
                 await adtClient.UpdateDigitalTwinAsync(deviceInfo.TwinId, updateTwinData);
 
                 Console.WriteLine($"{DateTime.Now} > Added initial Twin properties: {deviceInfo.TwinId}");
@@ -126,11 +127,11 @@ namespace SimulateData
                     double currentPressure = avgPressure + rand.NextDouble();
                     double currentVolumeFlow = deviceInfo.FlowCapacity * rand.NextDouble();
 
-
                     var updateTwinData = new JsonPatchDocument();
                     updateTwinData.AppendReplace("/Temperature", currentTemperature);
                     updateTwinData.AppendReplace("/Pressure", currentPressure);
                     updateTwinData.AppendReplace("/VolumeFlow", currentVolumeFlow);
+                    updateTwinData.AppendReplace("/SensorTimestamp", DateTime.Now);
                     await adtClient.UpdateDigitalTwinAsync(deviceInfo.TwinId, updateTwinData);
 
                     Console.WriteLine($"{DateTime.Now} > Updated Twin: {deviceInfo.TwinId} to temp={currentTemperature}, pressure={currentPressure}, volumeflow={currentVolumeFlow}");
