@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+    
+        "scriptUrl": {
+                "type": "String"
+        },
+        "scriptUrlSastoken": {
+                "type": "String"
+        },
+            "forceUpdateTag": {
+                "defaultValue": "[utcNow()]",
+                "type": "String"
+            },
+        "continueOnErrors": {
+                "defaultValue": false,
+                "type": "bool"
+            },
+        "clusterName": {
+                "type": "String"
+        },
+        "databaseName": {
+                "type": "String"
+        },
+        "scriptName": {
+                "type": "String"
+        }
+    },
+  "variables":{
+  },
+    "resources": [
+    {
+            "type": "Microsoft.Kusto/Clusters/Databases/Scripts",
+            "apiVersion": "2021-01-01",
+            "name": "[concat(concat(parameters('clusterName'), '/'), concat(parameters('databaseName'), '/'), parameters('scriptName'))]",
+            "properties": {          
+                "scriptUrl": "[parameters('scriptUrl')]",
+                "scriptUrlSasToken": "[parameters('scriptUrlSasToken')]",
+                "continueOnErrors": "[parameters('continueOnErrors')]",
+                "forceUpdateTag": "[parameters('forceUpdateTag')]"
+            }
+        }
+    ],
+    "outputs": {
+  }
+}

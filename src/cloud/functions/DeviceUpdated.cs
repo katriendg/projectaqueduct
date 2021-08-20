@@ -14,7 +14,7 @@ namespace ProjectAqueduct.Functions
     public static class DeviceUpdated
     {
         [Function("DeviceUpdated")]
-        public static async Task Run([EventHubTrigger("device-updates", Connection = "EventHubConnection")] string[] messages, FunctionContext context)
+        public static async Task Run([EventHubTrigger("device-updates", Connection = "EventHubConnection", ConsumerGroup = "function")] string[] messages, FunctionContext context)
         {
             var logger = context.GetLogger("DeviceUpdated");
             var data = context.BindingContext.BindingData;
@@ -25,8 +25,8 @@ namespace ProjectAqueduct.Functions
             for (int i = 0; i < messages.Length; i++)
             {
                 // Create connection to the Azure Digital Twin instance
-                string adtInstanceUrl = "https://" + properties[i]["cloudEvents:source"];
-                var client = new DigitalTwinsClient(new Uri(adtInstanceUrl), credentials);
+                string adtInstance = properties[i]["cloudEvents:source"];
+                var client = new DigitalTwinsClient(new Uri("https://" + adtInstance), credentials);
 
                 // Get and validate the twin from the message
                 string twinId = properties[i]["cloudEvents:subject"];
@@ -55,9 +55,8 @@ namespace ProjectAqueduct.Functions
             {
                 string attachedTwinId = relationship.TargetId;
                 logger.LogInformation($"Twin '{twinId}' is attached to twin '{attachedTwinId}'");
-                BasicDigitalTwin attachedTwin;
                 Response<BasicDigitalTwin> twinResponse = await client.GetDigitalTwinAsync<BasicDigitalTwin>(attachedTwinId);
-                attachedTwin = twinResponse.Value;
+                BasicDigitalTwin attachedTwin = twinResponse.Value;
 
                 // Create patch document to update the asset twin
                 var updateTwinData = new JsonPatchDocument();
