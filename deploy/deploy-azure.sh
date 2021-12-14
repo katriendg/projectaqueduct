@@ -231,7 +231,7 @@ az dt route create -g $rgName -n $adtName --route-name $ehDeviceUpdatesName --en
 az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehAssetUpdatesName --ehg $rgName --ehn $ehnName --eh $ehAssetUpdatesName --auth-type IdentityBased -o none
 az dt route create -g $rgName -n $adtName --route-name $ehAssetUpdatesName --endpoint-name $ehAssetUpdatesName --filter "type='Microsoft.DigitalTwins.Twin.Update' AND STARTS_WITH(\$body.modelId, 'dtmi:sample:aqueduct:asset:')" -o none
 az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehTwinHistoryName --ehg $rgName --ehn $ehnName --eh $ehTwinHistoryName --auth-type IdentityBased -o none
-az dt route create -g $rgName -n $adtName --route-name $ehTwinHistoryName --endpoint-name $ehTwinHistoryName --filter "type = 'Microsoft.DigitalTwins.Twin.Update' OR type = 'Microsoft.DigitalTwins.Relationship.Update'" -o none
+az dt route create -g $rgName -n $adtName --route-name $ehTwinHistoryName --endpoint-name $ehTwinHistoryName --filter "type = 'Microsoft.DigitalTwins.Twin.Update'" -o none
 az dt endpoint create eventhub -g $rgName -n $adtName --endpoint-name $ehAssetFlowName --ehg $rgName --ehn $ehnName --eh $ehAssetFlowName --auth-type IdentityBased -o none
 az dt route create -g $rgName -n $adtName --route-name $ehAssetFlowName --endpoint-name $ehAssetFlowName --filter "type='Microsoft.DigitalTwins.Twin.Update' AND STARTS_WITH(\$body.modelId, 'dtmi:sample:aqueduct:asset:')" -o none
 echo "Azure Digital Twin routing rules created."
@@ -284,7 +284,7 @@ echo "Configured ADX EH Ingestion"
 
 # Create a Data History Connection between the Azure Digital Twins instance, the Event Hub, and the ADX cluster
 # This is in preview and needs a preview version of the IoT Plug-in Extension
-az dt data-history create adx -n $adtName --cn $kustoName --adx-cluster-name $kustoName --adx-database-name $kustoDbName --eventhub $ehDataHistoryName --eventhub-consumer-group "adx" --eventhub-namespace $ehnName -o none
+#az dt data-history create adx -n $adtName --cn $kustoName --adx-cluster-name $kustoName --adx-database-name $kustoDbName --eventhub $ehDataHistoryName --eventhub-consumer-group "adx" --eventhub-namespace $ehnName -o none
 
 echo "FINISHED"
 # Log end time
