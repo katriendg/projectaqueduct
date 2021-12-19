@@ -31,7 +31,6 @@ namespace ProjectAqueduct.Functions
             {
                 string twinId = properties[i]["cloudEvents:subject"];
                 DateTime twinTime = DateTime.Parse(properties[i]["cloudEvents:time"]);
-                DateTime sensorTime = twinTime;
                 logger.LogInformation($"Egress twin '{twinId}' using: {messages[i]}");
                 TwinMessage twinMessage = JsonSerializer.Deserialize<TwinMessage>(messages[i]);
 
@@ -43,7 +42,7 @@ namespace ProjectAqueduct.Functions
                     try{
                         var tsValue = twinMessage.patch.FirstOrDefault(p => p.path == "/SensorTimestamp");
                         if(tsValue!=null)
-                            sensorTime = ((JsonElement)tsValue.value).GetDateTime();
+                            twinTime = ((JsonElement)tsValue.value).GetDateTime();
                     }
                     catch(System.Exception e){
                         Console.WriteLine($"Expected exception: {e.Message}");
@@ -51,7 +50,6 @@ namespace ProjectAqueduct.Functions
                 }
                 
                 history = new TwinHistory{
-                    originalTime = sensorTime,
                     modelId = twinMessage.modelId,
                     twinId = twinId,
                     twinTime = twinTime,

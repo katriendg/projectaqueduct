@@ -1,2 +1,27 @@
 .create table rawAdtHistory(payload: dynamic)
 .create table rawAdtHistory ingestion json mapping "rawAdtHistory_mapping" @'[{"column":"payload","path":"$","datatype":"dynamic"}]'
+
+.create table AdtHistory (
+    TimeStamp:datetime,
+    Id:string,
+    ModelId:string,
+    Key:string,
+    Value:dynamic,
+    Relationship:string,
+    RelationshipTarget:string
+)
+
+
+.create-or-alter function with (folder = "Update", skipvalidation = "true") Update_AdtHistory() {
+    rawAdtHistory
+    | extend TimeStamp = todatetime(payload.twinTime), Id = tostring(payload.twinId), ModelId = tostring(payload.modelId), 
+        Patches = payload.patch
+    | mv-expand Patches
+    | extend Key = tostring(Patches.path), Value = Patches.value
+    | extend Relationship = "", RelationshipTarget = ""
+    | project-away Patches, payload
+}
+
+.alter table AdtHistory policy update 
+@'[{ "IsEnabled": true, "Source": "rawAdtHistory", "Query": "Update_AdtHistory()", "IsTransactional": false, "PropagateIngestionProperties": false}]'
+
