@@ -282,10 +282,6 @@ az storage container delete -n $storageContainerAdx --connection-string $storage
 az kusto data-connection event-hub create --cluster-name $kustoName --resource-group $rgName --database-name adtHistoryDb  --compression None --consumer-group $kustoName --data-connection-name twinhistory --data-format MULTIJSON --event-hub-resource-id $ehTwinHistoryProcessedId --mapping-rule-name "rawAdtHistory_mapping" --table-name rawAdtHistory -o none
 echo "Configured ADX EH Ingestion"
 
-# Create a Data History Connection between the Azure Digital Twins instance, the Event Hub, and the ADX cluster
-# This is in preview and needs a preview version of the IoT Plug-in Extension
-#az dt data-history create adx -n $adtName --cn $kustoName --adx-cluster-name $kustoName --adx-database-name $kustoDbName --eventhub $ehDataHistoryName --eventhub-consumer-group "adx" --eventhub-namespace $ehnName -o none
-
 echo "FINISHED"
 # Log end time
 date

@@ -1,6 +1,8 @@
-# Project Aqueduct
+# Project Aqueduct - a sample Azure Digital Twins application
 
 End-to-end sample application in process industry showcasing how to leverage Azure Digital Twins, a DTDL based ontology, and the right mix of Azure services to address key patterns.
+
+> Disclaimer: this project is still in progress, and is meant as a learning exercise. It does not contain official guidance on using Azure Digital Twins.
 
 If you are interested in quickly experimenting and deploying the sample setup, continue on. If you would like to read more about this experiment you can find more detailed documentation:
 - [Project Aqueduct background and overview](docs/README.md)
@@ -10,6 +12,12 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 - Deployment scripts
 
 > Further in this repo we abbreviate the following words: **ADT**: Azure Digital Twins;  **DTDL**: Digital Twins Definition Language.
+
+## Open points
+
+- Finalize documentation
+- Add examples of ADT queries
+- Add Azure Data Explorer dashboards
 
 ## Deployment
 

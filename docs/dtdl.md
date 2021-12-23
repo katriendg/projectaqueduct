@@ -110,11 +110,13 @@ In our Aqueduct model, we leverage Enums to represent things like quality of a c
 
 These properties will be updated through event propagation via Azure Functions.
 
-### Storing value and storing limits within the model
+### Storing twin property values versus storing twin configuration settings within the model
 
-One of the things we also reflected on was the usecase of having both values of temperatures, volume flows and so forth propagate through the model, but also having actual properties to set limits or expected values. Consider these as properties that don't upgrade very often, but can be used to add some 'intelligence' to the twin by having more dynamic limit properties.
+One of the things we also reflected on was the use case of having both values of temperatures, volume flows, and so forth propagate through the model, but also having actual configuration properties to set limits or expected values. Consider these as properties that don't upgrade very often, but can be used to add some 'intelligence' to the twin by having more dynamic limit properties.
 
-Consider properties like *ExpectedFlowVolume* or *PressureMargin* in the model `dtmi:sample:aqueduct:asset:Base;1`. These properties will not be updated by using data from a device but rather we see these as settings, potentially updated by operators through an administrative UI. 
+> Learning: modelling your twin to store both value properties as well as configuration properties.
+
+Consider properties like *ExpectedFlowVolume* or *PressureMargin* in the model `dtmi:sample:aqueduct:asset:Base;1`. These properties will not be updated by using data from a device but rather we see these as configuration settings, potentially updated by operators through an administrative UI. 
 We will use such properties to allow us to dynamically calculate other types of properties such as *PressureQuality*.
 
 ```
