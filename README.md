@@ -54,7 +54,7 @@ The repo contains deployment scripts for the full solution (execute from the `./
 The repo contains a simulator for testing the solution (see `src/SimulateData` project).
 To run the console app locally, update the appsettings.json file with the URL of your Azure Digital Twins service created by the deployment scripts. Or create your local `appsettings.local.json` file with the following structure:
 
-```
+```json
 {
     "ADT":
     {
