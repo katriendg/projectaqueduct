@@ -11,7 +11,17 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 - Historization and running queries with Azure Data Explorer and Azure Digital Twins plugin
 - Deployment scripts
 
+
 > Further in this repo we abbreviate the following words: **ADT**: Azure Digital Twins;  **DTDL**: Digital Twins Definition Language.
+
+### Architecture components
+
+![Architecture - high level components](docs/images/architecture.png)
+
+### Graph in Azure Digital Twins Explorer
+
+![ADT explorer screenshot](docs/images/adtexplorer.png)
+
 
 ## Open points
 
