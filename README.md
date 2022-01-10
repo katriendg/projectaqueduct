@@ -8,7 +8,7 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 - [Project Aqueduct background and overview](docs/README.md)
 - [DTDL Models](docs/dtdl.md)
 - [Azure Digital Twins routing and event propagation flows](docs/routing.md)
-- Historization and running queries with Azure Data Explorer and Azure Digital Twins plugin
+- [Historization and running queries with Azure Data Explorer and Azure Digital Twins plugin](docs/adtqueryhist.md)
 - Deployment scripts
 
 
@@ -26,7 +26,7 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 ## Open points
 
 - Finalize documentation
-- Add examples of ADT queries
+- Add more examples of ADT queries
 - Add Azure Data Explorer dashboards
 
 ## Deployment
