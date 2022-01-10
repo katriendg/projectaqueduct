@@ -29,7 +29,7 @@ Make sure to update the `[ADT_URI]` to match your instance of ADT.
 	| join kind=inner (AdtHistory) on Id 
     | order by TimeStamp desc
     ```
-2. Query all Assets (twins based on a model of type '') that are at two hops away from Operator1
+2. Query all Assets (twins based on a model of type 'dtmi:sample:aqueduct:asset:Base;1', or inheriting from) that are at two hops away from Operator1
 
     ```
     let ADTendpoint = "[ADT_URI]";
