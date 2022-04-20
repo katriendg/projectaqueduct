@@ -4,7 +4,7 @@ At the heart of our learning experiment was understanding how we could leverage 
 
 High level flow:
 
-![Architecture - high level flow](images/arch-highlevel-flow.png)
+![Architecture - high level flow](images/arch-highlevel-flow-v2.png)
 
 ## Azure Digital Twins Routes
 
@@ -29,13 +29,13 @@ The following ADT routes are used in the solution:
     - ADT event route filter: `type='Microsoft.DigitalTwins.Twin.Update' AND STARTS_WITH($body.modelId, 'dtmi:sample:aqueduct:asset:')`
     - Azure Function: [`AssetFlow`](../src/cloud/functions/AssetFlow.cs)
     - This route will process use twin property changes on assets to simulate the flow through the modelled system by calculating the `ExpectedFlowVolume` for each connected asset based on the asset type and configuration, see [below](#flow-simulation) for a description.
-
+<!-- 
 - **Twin History**
     - ADT Event Hub endpoint: `twin-history`
     - ADT event route: `twin-history`
     - ADT event route filter: `type = 'Microsoft.DigitalTwins.Twin.Update' OR type = 'Microsoft.DigitalTwins.Relationship.Update'`
     - Azure Function: [`TwinUpdatedEgress`](../src/cloud/functions/TwinUpdatedEgress.cs)
-    - This route will process twin property changes. Every property change will be stored in a table of the attached Azure Data Explorer instance. For the timestamp of the change, the `SensorTimestamp` property (if exists this is the timestamp of the source) will be used, otherwise the time stamp of the twin change.
+    - This route will process twin property changes. Every property change will be stored in a table of the attached Azure Data Explorer instance. For the timestamp of the change, the `SensorTimestamp` property (if exists this is the timestamp of the source) will be used, otherwise the time stamp of the twin change. -->
 
 We use the following DTDL model naming convention: all device models start with `dtmi:sample:aqueduct:device` and all asset models start with `dtmi:sample:aqueduct:asset`. While this is not required for inheritance, it makes it possible to do ADT event route filtering on base type.
 

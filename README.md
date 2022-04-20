@@ -16,7 +16,7 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 
 ### Architecture components
 
-![Architecture - high level components](docs/images/architecture.png)
+![Architecture - high level components](docs/images/architecture-v2.png)
 
 ### Graph in Azure Digital Twins Explorer
 
@@ -32,6 +32,7 @@ If you are interested in quickly experimenting and deploying the sample setup, c
 ## Deployment
 
 The repo contains deployment scripts for the full solution (execute from the `./deploy` folder).
+Note: the architecture leverages Data Historization feature to Azure Data Explorer, which is in Preview at time of writing.
 
 ### Pre-requisites
 - Azure account
@@ -72,4 +73,12 @@ To run the console app locally, update the appsettings.json file with the URL of
     }
 }
 ```
+Then run the simulator from within the `src/SimulateData` folder:
+
+```dotnet run```
+
+## Azure Functions testing
+
+To deploy the function project located in `scr/cloud/functions` you can use Visual Studio Code with Azure Functions Tools installed. The function app created by the deployment script is called `[yourprefix]fn`.
+
 
